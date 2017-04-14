@@ -19,6 +19,7 @@
 
 #include <list>
 #include <stack>
+#include <vector>
 
 #include "clang/AST/StmtVisitor.h"
 
@@ -105,6 +106,7 @@ class RSObjectRefCount : public clang::StmtVisitor<RSObjectRefCount> {
   std::deque<Scope*> mScopeStack;  // A deque used as a stack to store scopes, but also
                                    // accessed through its iterator in read-only mode.
   clang::DeclContext* mCurrentDC;
+  // TODO: this should be static
   bool RSInitFD;
   unsigned mTempID;  // A unique id that can be used to distinguish temporary variables
 
@@ -164,6 +166,8 @@ class RSObjectRefCount : public clang::StmtVisitor<RSObjectRefCount> {
     }
   }
 
+  void HandleParamsAndLocals(clang::FunctionDecl *FD);
+
   static clang::FunctionDecl *GetRSSetObjectFD(DataType DT) {
     slangAssert(RSExportPrimitiveType::IsRSObjectType(DT));
     if (DT >= 0 && DT < DataTypeMax) {
@@ -191,6 +195,12 @@ class RSObjectRefCount : public clang::StmtVisitor<RSObjectRefCount> {
   static clang::FunctionDecl *GetRSClearObjectFD(const clang::Type *T) {
     return GetRSClearObjectFD(RSExportPrimitiveType::GetRSSpecificType(T));
   }
+
+  static void *CreateParameterGuard(
+      clang::ASTContext& C,
+      clang::DeclContext* DC,
+      clang::ParmVarDecl *PD,
+      std::vector<clang::Stmt*> &NewStmts);
 
   void SetDeclContext(clang::DeclContext* DC) { mCurrentDC = DC; }
   clang::DeclContext* GetDeclContext() const { return mCurrentDC; }
