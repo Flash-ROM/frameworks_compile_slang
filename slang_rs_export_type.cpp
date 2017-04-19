@@ -1032,8 +1032,10 @@ bool RSExportPrimitiveType::IsRSObjectType(DataType DT) {
 
 bool RSExportPrimitiveType::IsStructureTypeWithRSObject(const clang::Type *T) {
   bool RSObjectTypeSeen = false;
-  while (T && T->isArrayType()) {
+  slangAssert(T != nullptr);
+  while (T->isArrayType()) {
     T = T->getArrayElementTypeNoTypeQual();
+    slangAssert(T != nullptr);
   }
 
   const clang::RecordType *RT = T->getAsStructureType();
